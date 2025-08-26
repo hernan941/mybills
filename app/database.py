@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 from pymongo.database import Database
 from app.config import settings
 import logging
@@ -15,7 +16,8 @@ class DatabaseConnection:
     def connect(self) -> Database:
         """Establece conexión con MongoDB"""
         try:
-            self._client = MongoClient(settings.mongodb_uri)
+            self._client = MongoClient(settings.mongodb_uri, server_api=ServerApi('1'))
+
             self._database = self._client[settings.database_name]
             
             # Verificar conexión
@@ -71,3 +73,14 @@ def get_database() -> Database:
 def close_database():
     """Función helper para cerrar la conexión"""
     db_connection.close()
+
+def verify_collection_connection(collection_name: str = "users") -> bool:
+    """Verifica la conexión a una colección específica"""
+    try:
+        db = get_database()
+        count = db[collection_name].count_documents({})
+        logger.info(f"Conexión verificada a la colección '{collection_name}', documentos: {count}")
+        return True
+    except Exception as e:
+        logger.error(f"No se pudo conectar a la colección '{collection_name}': {e}")
+        return False

@@ -135,26 +135,46 @@
             {{ format_currency(transaction.amount) }}
         </strong>
     </td>
-    <td>
+<td>
+    <div class="d-flex gap-1">
         <a href="/transaction/{{ transaction._id }}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
             <i class="bi bi-eye"></i>
         </a>
-    {% if not transaction.validated %}
-        <!-- Botón para validar -->
-        <form method="post" action="/validate-transaction/{{ transaction._id }}" style="display:inline;">
-            <button type="submit" class="btn btn-sm btn-success" title="Validar gasto">
-                <i class="bi bi-check-circle"></i>
-            </button>
-        </form>
+        {% if not transaction.validated %}
+            <!-- Botón para validar -->
+            <form method="post" action="/validate-transaction/{{ transaction._id }}">
+                <button type="submit" class="btn btn-sm btn-success" title="Validar gasto">
+                    <i class="bi bi-check-circle"></i>
+                </button>
+            </form>
 
-        <!-- Botón para borrar -->
-        <form method="post" action="/delete-transaction/{{ transaction._id }}" style="display:inline;">
-            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar gasto">
-                <i class="bi bi-trash"></i>
-            </button>
-        </form>
-    {% endif %}
-    </td>
+
+<div class="modal fade" id="confirmDeleteModal-{{ transaction._id }}" tabindex="-1" aria-labelledby="confirmDeleteLabel-{{ transaction._id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDeleteLabel-{{ transaction._id }}">Confirmar eliminación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro que deseas eliminar este gasto?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" onclick="document.querySelector('#deleteForm-{{ transaction._id }}').submit();">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+            <!-- Botón para borrar -->
+<form method="post" action="/delete-transaction/{{ transaction._id }}" id="deleteForm-{{ transaction._id }}">
+    <button type="button" class="btn btn-sm btn-danger" title="Eliminar gasto" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal-{{ transaction._id }}">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
+        {% endif %}
+    </div>
+</td>
 </tr>
 {% endfor %}
 
@@ -217,6 +237,8 @@
         </a>
     </div>
     </div>
+
+
 </div>
 {% endblock %}
 

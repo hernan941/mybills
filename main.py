@@ -5,8 +5,6 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.routes import create_routes
 from app.database import close_database
 import logging
-import uvicorn
-import os
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,24 +48,3 @@ def create_app() -> FastAPI:
     return app
 
 app = create_app()
-
-if __name__ == "__main__":
-    if os.path.exists(".env"):
-        from dotenv import load_dotenv
-        load_dotenv()
-        logger.info("Variables de entorno cargadas desde .env")
-    
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
-    reload = os.getenv("RELOAD", "True").lower() == "true"
-    
-    logger.info(f"Iniciando servidor en {host}:{port}")
-    
-    uvicorn.run(
-        "main:app",
-        host=host,
-        port=port,
-        reload=reload,
-        log_level="info",
-        access_log=True
-    )

@@ -8,7 +8,7 @@ import logging
 from typing import Optional
 
 from app.config import settings, TRANSACTION_TYPES, TRANSACTION_ORIGINS, COMMON_CATEGORIES
-from app.database import get_database
+from app.database import get_database, verify_collection_connection
 from app.models import Transaction, TransactionSummary, User
 from app.auth import auth_manager, get_current_user
 from app.utils import (
@@ -16,6 +16,9 @@ from app.utils import (
     humanize_category, humanize_transaction_type, get_transaction_type_color,
     get_transaction_type_icon, validate_metadata_json, paginate_list
 )
+
+
+from app.parsers import TenpoEmailParser
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +69,8 @@ def create_routes(app: FastAPI):
         user = await get_current_user_from_session(request)
         if user:
             return RedirectResponse(url="/dashboard", status_code=302)
-        
+
+
         return templates.TemplateResponse("login.html", {
             "request": request,
             "error": None
@@ -81,6 +85,8 @@ def create_routes(app: FastAPI):
         """Procesar login"""
         # Autenticar usuario
         user = auth_manager.authenticate_user(username, password)
+
+
         
         if not user:
             return templates.TemplateResponse("login.html", {
@@ -365,6 +371,64 @@ def create_routes(app: FastAPI):
         except Exception as e:
             logger.error(f"Error validando transacción: {e}")
             raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+    from pydantic import BaseModel
+    class EmailWebhookRequest(BaseModel):
+        subject: str
+        body: str
+
+    @app.post("/webhook/email")
+    async def receive_email_webhook(
+        subject: str = Form(..., description="Asunto del email"),
+        body: str = Form(..., description="Contenido del email")
+    ):
+        """Endpoint para recibir emails via form data"""
+        try:
+            if not subject or not body:
+                raise HTTPException(status_code=400, detail="Subject y body son requeridos")
+
+            
+            # Importar parsers
+            # Intentar parsear con diferentes parsers
+            transaction_data = None
+            
+            # Parser de Tenpo
+            if TenpoEmailParser.can_parse(subject, body):
+                transaction_data = TenpoEmailParser.parse(subject, body)
+            
+            if not transaction_data:
+                # Log del email no parseado para debugging
+                logger.info(f"Email no parseado - Subject: {subject[:50]}...")
+                return {"status": "ignored", "reason": "No matching parser found"}
+
+            
+            # Aquí necesitarías obtener el user_id de alguna manera
+            # Por ahora usaré un user_id por defecto o podrías pasarlo en el webhook
+            # En un caso real, podrías usar el email del remitente para identificar al usuario
+            default_user_id = "68ae0680e37dadbe6b948619"  # Cambiar por lógica real
+            
+            # Crear la transacción
+            transaction = transaction_data.to_transaction(default_user_id)
+            
+            # Guardar en base de datos
+            db = get_database()
+            result = db.transactions.insert_one(transaction.model_dump(by_alias=True))
+            
+            logger.info(f"Transacción creada desde email: {result.inserted_id}")
+            
+            return {
+                "status": "success", 
+                "transaction_id": str(result.inserted_id),
+                "amount": transaction.amount,
+                "description": transaction.description
+            }
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error procesando webhook de email: {e}")
+            raise HTTPException(status_code=500, detail="Error interno del servidor")
+
 
     # Ruta para health check
     @app.get("/health")

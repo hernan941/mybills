@@ -35,6 +35,8 @@ class AuthManager:
         try:
             # Buscar usuario por username
             user_doc = self.db.users.find_one({"username": username, "is_active": True})
+            for user_doc in self.db.users.find():
+                logger.info(user_doc)
             
             if not user_doc:
                 logger.info(f"Usuario no encontrado: {username}")

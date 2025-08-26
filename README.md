@@ -41,7 +41,7 @@ MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/mybills?retryWrit
 ## Ejecución
 
 ```bash
-python main.py
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 La aplicación estará disponible en: http://localhost:8000
