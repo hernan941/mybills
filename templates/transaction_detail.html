@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de Transacción - WebMyBills{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-receipt"></i> Detalle de Transacción
+                </h1>
+                <p class="text-muted">Información completa de la transacción</p>
+            </div>
+            <a href="/dashboard" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+
+        <!-- Transaction Details Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <span class="badge bg-{% if transaction.type == 'ingreso' %}success{% elif transaction.type == 'gasto' %}danger{% else %}info{% endif %} me-2">
+                        {{ get_transaction_type_icon(transaction.type) }} {{ humanize_transaction_type(transaction.type) }}
+                    </span>
+                </h5>
+                <small class="text-muted">ID: {{ transaction._id }}</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Monto -->
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Monto</h6>
+                        <h3 class="mb-0 {{ get_transaction_type_color(transaction.type) }}">
+                            {{ format_currency(transaction.amount) }}
+                        </h3>
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Fecha y Hora</h6>
+                        <p class="mb-0">
+                            <i class="bi bi-calendar3"></i> {{ format_datetime(transaction.date) }}
+                        </p>
+                        <small class="text-muted">{{ format_date(transaction.date) }}</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Categoría -->
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Categoría</h6>
+                        {% if transaction.category %}
+                            <span class="badge bg-light text-dark">
+                                {{ humanize_category(transaction.category) }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">Sin categoría</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Origen -->
+                    <div class="col-md-6 mb-3">
+                        <h6 class="text-muted mb-1">Origen</h6>
+                        <p class="mb-0">
+                            <i class="bi bi-credit-card"></i> {{ humanize_origin(transaction.origin) }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Descripción -->
+                {% if transaction.description %}
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Descripción</h6>
+                    <p class="mb-0">{{ transaction.description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Metadatos -->
+                {% if transaction.metadata and transaction.metadata|length > 0 %}
+                <div class="mb-3">
+                    <h6 class="text-muted mb-1">Metadatos</h6>
+                    <div class="bg-light p-3 rounded">
+                        <pre class="mb-0 font-monospace small">{{ transaction.metadata|tojson(indent=2) }}</pre>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Fechas de creación y actualización -->
+                <div class="row mt-4 pt-3 border-top">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Creado</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ format_datetime(transaction.created_at) }}
+                        </small>
+                    </div>
+                    {% if transaction.updated_at %}
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Última actualización</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history"></i> {{ format_datetime(transaction.updated_at) }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">Acciones</h6>
+                        <p class="card-text text-muted">Opciones disponibles para esta transacción</p>
+                    </div>
+                    <div>
+                        <a href="/dashboard" class="btn btn-primary">
+                            <i class="bi bi-list-ul"></i> Ver Todas las Transacciones
+                        </a>
+                        <a href="/add-transaction" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Nueva Transacción
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Summary -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Información Adicional</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-{% if transaction.type == 'ingreso' %}arrow-up-circle text-success{% elif transaction.type == 'gasto' %}arrow-down-circle text-danger{% else %}arrow-left-right text-info{% endif %}" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2 mb-0">Tipo</h6>
+                            <p class="text-muted mb-0">{{ humanize_transaction_type(transaction.type) }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-calendar-week text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2 mb-0">Día de la semana</h6>
+                            <p class="text-muted mb-0">{{ transaction.date.strftime('%A') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3 bg-light rounded">
+                            <i class="bi bi-clock text-secondary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2 mb-0">Hora</h6>
+                            <p class="text-muted mb-0">{{ transaction.date.strftime('%H:%M') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // ESC para volver al dashboard
+        if (e.key === 'Escape') {
+            window.location.href = '/dashboard';
+        }
+        // N para nueva transacción
+        if (e.key === 'n' || e.key === 'N') {
+            if (!e.ctrlKey && !e.altKey) {
+                window.location.href = '/add-transaction';
+            }
+        }
+    });
+    
+    // Pretty print JSON if exists
+    const metadataPre = document.querySelector('pre');
+    if (metadataPre) {
+        try {
+            const json = JSON.parse(metadataPre.textContent);
+            metadataPre.textContent = JSON.stringify(json, null, 2);
+        } catch (e) {
+            // Si no es JSON válido, mantener el texto original
+        }
+    }
+});
+</script>
+{% endblock %}

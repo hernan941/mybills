@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Transacción - WebMyBills{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-plus-circle"></i> Nueva Transacción
+                </h1>
+                <p class="text-muted">Agrega un nuevo gasto, ingreso o transferencia</p>
+            </div>
+            <a href="/dashboard" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+
+        <!-- Error message -->
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- Success message -->
+        {% if success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- Form -->
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="/add-transaction" id="transactionForm">
+                    <div class="row">
+                        <!-- Monto -->
+                        <div class="col-md-6 mb-3">
+                            <label for="amount" class="form-label">Monto <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">€</span>
+                                <input 
+                                    type="number" 
+                                    class="form-control" 
+                                    id="amount" 
+                                    name="amount" 
+                                    step="0.01" 
+                                    min="0.01"
+                                    value="{{ form_data.amount if form_data else '' }}"
+                                    required 
+                                    autofocus
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            <div class="form-text">Ingresa el monto de la transacción</div>
+                        </div>
+
+                        <!-- Tipo -->
+                        <div class="col-md-6 mb-3">
+                            <label for="type" class="form-label">Tipo <span class="text-danger">*</span></label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="">Selecciona un tipo</option>
+                                {% for type_option in transaction_types %}
+                                <option value="{{ type_option }}" 
+                                        {% if form_data and form_data.type == type_option %}selected{% endif %}>
+                                    {{ humanize_transaction_type(type_option) }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Tipo de transacción</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Categoría -->
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Categoría</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">Sin categoría</option>
+                                {% for category_option in categories %}
+                                <option value="{{ category_option }}" 
+                                        {% if form_data and form_data.category == category_option %}selected{% endif %}>
+                                    {{ humanize_category(category_option) }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Categoría opcional para organizar</div>
+                        </div>
+
+                        <!-- Origen -->
+                        <div class="col-md-6 mb-3">
+                            <label for="origin" class="form-label">Origen</label>
+                            <select class="form-select" id="origin" name="origin">
+                                <option value="">No especificado</option>
+                                {% for origin_option in transaction_origins %}
+                                <option value="{{ origin_option }}" 
+                                        {% if form_data and form_data.origin == origin_option %}selected{% endif %}>
+                                    {{ humanize_origin(origin_option) }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Método de pago o origen del dinero</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descripción</label>
+                        <textarea 
+                            class="form-control" 
+                            id="description" 
+                            name="description" 
+                            rows="3"
+                            maxlength="500"
+                            placeholder="Describe la transacción (opcional)"
+                        >{{ form_data.description if form_data else '' }}</textarea>
+                        <div class="form-text">Descripción opcional de la transacción</div>
+                    </div>
+
+                    <!-- Fecha y Hora -->
+                    <div class="mb-3">
+                        <label for="date_str" class="form-label">Fecha y Hora</label>
+                        <input 
+                            type="datetime-local" 
+                            class="form-control" 
+                            id="date_str" 
+                            name="date_str"
+                            value="{% if form_data and form_data.date_str %}{{ form_data.date_str }}{% endif %}"
+                        >
+                        <div class="form-text">Si se deja vacío, se usará la fecha y hora actual</div>
+                    </div>
+
+                    <!-- Metadatos -->
+                    <div class="mb-4">
+                        <label for="metadata_json" class="form-label">Metadatos (JSON opcional)</label>
+                        <textarea 
+                            class="form-control font-monospace" 
+                            id="metadata_json" 
+                            name="metadata_json" 
+                            rows="4"
+                            placeholder='{"tienda": "Mercadona", "productos": 5, "descuento": 10}'
+                        >{{ form_data.metadata_json if form_data else '' }}</textarea>
+                        <div class="form-text">
+                            Datos adicionales en formato JSON. Ejemplo: {"tienda": "Mercadona", "productos": 5}
+                        </div>
+                    </div>
+
+                    <!-- Botones -->
+                    <div class="d-flex justify-content-between">
+                        <a href="/dashboard" class="btn btn-outline-secondary">
+                            <i class="bi bi-x"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar Transacción
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>Tipos de transacción:</strong>
+                        <ul>
+                            <li><span class="badge bg-success">Ingreso</span>: Dinero que entra (salario, ventas, etc.)</li>
+                            <li><span class="badge bg-danger">Gasto</span>: Dinero que sale (compras, facturas, etc.)</li>
+                            <li><span class="badge bg-info">Transferencia</span>: Movimientos entre cuentas</li>
+                        </ul>
+                    </li>
+                    <li><strong>Metadatos:</strong> Puedes agregar información extra en formato JSON para análisis detallados.</li>
+                    <li><strong>Categorías:</strong> Te ayudan a organizar y analizar tus gastos por tipo.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('transactionForm');
+    const metadataField = document.getElementById('metadata_json');
+    const typeField = document.getElementById('type');
+    
+    // Validar JSON en tiempo real
+    metadataField.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value === '') {
+            this.classList.remove('is-invalid', 'is-valid');
+            return;
+        }
+        
+        try {
+            JSON.parse(value);
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } catch (e) {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+    
+    // Cambiar colores según el tipo
+    typeField.addEventListener('change', function() {
+        const typeColors = {
+            'ingreso': 'success',
+            'gasto': 'danger',
+            'transferencia': 'info'
+        };
+        
+        // Remover clases anteriores
+        this.classList.remove('border-success', 'border-danger', 'border-warning', 'border-info');
+        
+        // Agregar nueva clase
+        const colorClass = typeColors[this.value];
+        if (colorClass) {
+            this.classList.add('border-' + colorClass);
+        }
+    });
+    
+    // Validación antes de enviar
+    form.addEventListener('submit', function(e) {
+        const metadataValue = metadataField.value.trim();
+        if (metadataValue !== '') {
+            try {
+                JSON.parse(metadataValue);
+            } catch (error) {
+                e.preventDefault();
+                alert('El JSON de metadatos no es válido. Por favor corrígelo o déjalo vacío.');
+                metadataField.focus();
+                return false;
+            }
+        }
+    });
+    
+    // Auto-llenar fecha actual si está vacía
+    const dateField = document.getElementById('date_str');
+    if (!dateField.value) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        dateField.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+});
+</script>
+{% endblock %}
