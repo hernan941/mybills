@@ -139,13 +139,21 @@
         <a href="/transaction/{{ transaction._id }}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
             <i class="bi bi-eye"></i>
         </a>
-        {% if not transaction.validated and transaction.type == 'gasto' %}
+    {% if not transaction.validated %}
+        <!-- Botón para validar -->
         <form method="post" action="/validate-transaction/{{ transaction._id }}" style="display:inline;">
             <button type="submit" class="btn btn-sm btn-success" title="Validar gasto">
                 <i class="bi bi-check-circle"></i>
             </button>
         </form>
-        {% endif %}
+
+        <!-- Botón para borrar -->
+        <form method="post" action="/delete-transaction/{{ transaction._id }}" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar gasto">
+                <i class="bi bi-trash"></i>
+            </button>
+        </form>
+    {% endif %}
     </td>
 </tr>
 {% endfor %}

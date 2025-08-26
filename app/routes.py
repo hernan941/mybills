@@ -341,6 +341,31 @@ def create_routes(app: FastAPI):
             logger.error(f"Error validando transacción: {e}")
             raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+
+    @app.post("/delete-transaction/{transaction_id}")
+    async def delete_transaction(
+        request: Request,
+        transaction_id: str,
+        user: User = Depends(require_auth)
+    ):
+        """Valida manualmente una transacción"""
+        db = get_database()
+        try:
+            if not ObjectId.is_valid(transaction_id):
+                raise HTTPException(status_code=404, detail="Transacción no encontrada")
+            db.transactions.delete_one(
+                {
+                    "_id": ObjectId(transaction_id),
+                    "user_id": ObjectId(str(user.id)),
+                }
+            )
+            return RedirectResponse(url="/dashboard?success=deleted", status_code=302)
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error validando transacción: {e}")
+            raise HTTPException(status_code=500, detail="Error interno del servidor")
+
     # Ruta para health check
     @app.get("/health")
     async def health_check():

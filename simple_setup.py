@@ -9,8 +9,8 @@ from pymongo import MongoClient
 from bson import ObjectId
 
 # Configuración
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/webmybills")
-DATABASE_NAME = "webmybills"
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/mybills")
+DATABASE_NAME = "mybills"
 
 def create_simple_user():
     """Crea un usuario simple directamente en MongoDB"""
@@ -182,7 +182,7 @@ def test_connection():
 def main():
     """Función principal"""
     
-    print("🚀 WebMyBills - Setup Simple")
+    print("🚀 mybills - Setup Simple")
     print("=" * 40)
     
     # Probar conexión primero

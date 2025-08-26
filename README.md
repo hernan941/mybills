@@ -1,5 +1,5 @@
 #
-:WebMyBills - Gestor de Gastos e Ingresos
+:mybills - Gestor de Gastos e Ingresos
 
 Una aplicación web monolítica desarrollada con FastAPI, Jinja2 y MongoDB para gestionar transacciones financieras personales.
 
@@ -29,13 +29,13 @@ pip install -r requirements.txt
 4. **Configurar variables de entorno:**
 ```bash
 # Crear archivo .env
-echo "MONGODB_URI=mongodb://localhost:27017/webmybills" > .env
+echo "MONGODB_URI=mongodb://localhost:27017/mybills" > .env
 echo "SECRET_KEY=tu_clave_secreta_muy_segura_aqui" >> .env
 ```
 
 Para MongoDB Atlas, usa una URI como:
 ```
-MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/webmybills?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/mybills?retryWrites=true&w=majority
 ```
 
 ## Ejecución
@@ -49,7 +49,7 @@ La aplicación estará disponible en: http://localhost:8000
 ## Estructura del Proyecto
 
 ```
-webmybills/
+mybills/
 ├── app/
 │   ├── __init__.py
 │   ├── config.py          # Configuración y variables de entorno

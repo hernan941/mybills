@@ -13,7 +13,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('webmybills.log')
+        logging.FileHandler('mybills.log')
     ]
 )
 
@@ -25,7 +25,7 @@ def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(_):
         yield
-        logger.info("Cerrando WebMyBills...")
+        logger.info("Cerrando mybills...")
         close_database()
         logger.info("Aplicación cerrada correctamente")
     
