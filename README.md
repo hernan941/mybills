@@ -2,19 +2,6 @@
 
 Una aplicación web moderna para gestionar tus finanzas personales, desarrollada con FastAPI, Jinja2 y MongoDB.
 
-## ✨ Características
-
-- 🔐 **Autenticación segura** con sesiones
-- 💸 **Gestión completa de transacciones** (gastos, ingresos, pagos, transferencias)
-- 🤖 **Importación automática** desde emails de Tenpo via Google Apps Script
-- �️ **Categorización inteligente** de transacciones automáticas
-- �🎨 **Interface web responsiva** renderizada del lado del servidor (SSR)
-- 📊 **Dashboard con vistas mensual e histórica**
-- ✏️ **Edición de categorías** desde el detalle de transacciones
-- 🗄️ **Base de datos MongoDB** (local o Atlas)
-- 🛡️ **Validaciones y seguridad** integradas
-- ⌨️ **Atajos de teclado** para navegación rápida
-
 ## 🚀 Inicio Rápido
 
 ### Prerrequisitos
@@ -154,7 +141,7 @@ MyBills incluye un sistema de webhook que permite recibir automáticamente email
 
 ## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+Este proyecto está bajo la Licencia MIT. 
 
 ## 🆘 Soporte
 

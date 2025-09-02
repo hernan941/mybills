@@ -54,6 +54,58 @@ async def require_auth(request: Request) -> User:
         )
     return user
 
+def prepare_chart_data(transactions_list):
+    """Prepara los datos para los gráficos de categorías"""
+    from app.utils import humanize_category
+    
+    # Solo procesar gastos para el gráfico de categorías
+    gastos = [t for t in transactions_list if t.get('type') == 'gasto']
+    
+    # Agrupar por categoría
+    category_totals = {}
+    for transaction in gastos:
+        category = transaction.get('category', 'sin_categoria')
+        amount = float(transaction.get('amount', 0))
+        
+        if category in category_totals:
+            category_totals[category] += amount
+        else:
+            category_totals[category] = amount
+    
+    # Colores predefinidos para cada categoría
+    category_colors = {
+        'alimentacion': '#FF6384',
+        'transporte': '#36A2EB', 
+        'entretenimiento': '#FFCE56',
+        'salud': '#4BC0C0',
+        'educacion': '#9966FF',
+        'hogar': '#FF9F40',
+        'trabajo': '#FF6384',
+        'compras': '#C9CBCF',
+        'servicios': '#4BC0C0',
+        'supermercado': '#36A2EB',
+        'restaurantes': '#FFCE56',
+        'ropa': '#9966FF',
+        'otros': '#C9CBCF',
+        'sin_categoria': '#E7E9ED'
+    }
+    
+    # Preparar datos para Chart.js
+    categories = []
+    colors = []
+    amounts = []
+    
+    for category, total in category_totals.items():
+        categories.append(humanize_category(category))
+        colors.append(category_colors.get(category, '#C9CBCF'))
+        amounts.append(total)
+    
+    return {
+        'categories': categories,
+        'colors': colors, 
+        'amounts': amounts
+    }
+
 def create_routes(app: FastAPI):
     """Crea todas las rutas de la aplicación"""
     
@@ -161,6 +213,9 @@ def create_routes(app: FastAPI):
             # Crear resumen
             summary = TransactionSummary.from_transactions(transactions_list)
             
+            # Preparar datos para gráficos
+            chart_data = prepare_chart_data(transactions_list)
+            
             return templates.TemplateResponse("dashboard.html", {
                 "request": request,
                 "user": user,
@@ -168,7 +223,8 @@ def create_routes(app: FastAPI):
                 "summary": summary,
                 "pagination": pagination,
                 "current_view": view,
-                "is_monthly": view == "monthly"
+                "is_monthly": view == "monthly",
+                "chart_data": chart_data
             })
             
         except Exception as e:
@@ -181,6 +237,7 @@ def create_routes(app: FastAPI):
                 "pagination": {"page": 1, "pages": 1, "has_prev": False, "has_next": False},
                 "current_view": view,
                 "is_monthly": view == "monthly",
+                "chart_data": {"categories": [], "colors": [], "amounts": []},
                 "error": "Error cargando transacciones"
             })
 

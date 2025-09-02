@@ -51,6 +51,7 @@ COMMON_CATEGORIES = [
     "alimentacion",
     "transporte",
     "entretenimiento",
+    "gato",
     "salud",
     "educacion",
     "hogar",

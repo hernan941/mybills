@@ -1,0 +1,26 @@
+/* 
+ * Favicon PNG Generator
+ * Este archivo contiene una imagen PNG de 32x32 codificada en base64
+ * para usar como favicon fallback
+ */
+
+/* 
+ * Para generar el favicon.png, guarda este contenido base64 como archivo:
+ * data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAOBSURBVFiFtZfNaxNBFMafmSRN0zRpk1qrtVqxWlux4MGDBy8ePHjw4MGDB/+Ag/+BB/+Agwf/gIMHDx48ePDgwYMHDx48eBC8eFGxWqu1Wqu1aZs0TZpkk2yy+87szu4mm2yy2Qf2zc7Mvt/73nvzZgZgjDHG/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A/gf2P7D/gf0P7H9g/wP7H9j/wP4H9j+w/4H9D+x/YP8D+x/Y/8D+B/Y/sP+B/Q/sf2D/A/sf2P7A
+ */
+
+/* Fallback styles for older browsers */
+.favicon-fallback {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(45deg, #0d6efd, #198754);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+}

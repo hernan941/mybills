@@ -298,3 +298,42 @@ footer {
         box-shadow: none !important;
     }
 }
+
+/* Charts Styles */
+.chart-container {
+    position: relative;
+    height: 400px;
+}
+
+#categoryChart {
+    max-height: 400px;
+}
+
+.chart-legend-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.chart-legend-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 0.375rem;
+}
+
+.chart-color-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+/* Mobile responsiveness for charts */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+    }
+    
+    #categoryChart {
+        max-height: 300px;
+    }
+}

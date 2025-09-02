@@ -97,6 +97,7 @@ def humanize_category(category: Optional[str]) -> str:
         "salud": "Salud",
         "educacion": "Educación",
         "hogar": "Hogar",
+        "gato": "Gato",
         "trabajo": "Trabajo",
         "compras": "Compras",
         "servicios": "Servicios",
@@ -104,7 +105,6 @@ def humanize_category(category: Optional[str]) -> str:
         "restaurantes": "Restaurantes",
         "ropa": "Ropa y Accesorios",
         "otros": "Otros",
-        "otro": "Otro"  # Mantener compatibilidad hacia atrás
     }
     return mapping.get(category, category.replace("_", " ").title())
 
