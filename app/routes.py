@@ -14,7 +14,8 @@ from app.auth import auth_manager, get_current_user
 from app.utils import (
     format_currency, format_datetime, format_date, humanize_origin,
     humanize_category, humanize_transaction_type, get_transaction_type_color,
-    get_transaction_type_icon, validate_metadata_json, paginate_list
+    get_transaction_type_icon, validate_metadata_json, paginate_list,
+    get_current_month_name
 )
 
 
@@ -34,6 +35,7 @@ templates.env.globals["humanize_category"] = humanize_category
 templates.env.globals["humanize_transaction_type"] = humanize_transaction_type
 templates.env.globals["get_transaction_type_color"] = get_transaction_type_color
 templates.env.globals["get_transaction_type_icon"] = get_transaction_type_icon
+templates.env.globals["get_current_month_name"] = get_current_month_name
 
 async def get_current_user_from_session(request: Request) -> Optional[User]:
     """Obtiene el usuario actual desde la sesión"""
@@ -123,17 +125,33 @@ def create_routes(app: FastAPI):
     async def dashboard(
         request: Request,
         page: int = 1,
+        view: str = "monthly",  # monthly o historical
         user: User = Depends(require_auth)
     ):
         """Dashboard principal con lista de transacciones"""
         db = get_database()
         
         try:
+            # Crear filtro base
+            base_filter = {"user_id": ObjectId(str(user.id))}
+            
+            # Si es vista mensual, filtrar por mes actual
+            if view == "monthly":
+                from datetime import datetime
+                now = datetime.now()
+                start_of_month = datetime(now.year, now.month, 1)
+                if now.month == 12:
+                    end_of_month = datetime(now.year + 1, 1, 1)
+                else:
+                    end_of_month = datetime(now.year, now.month + 1, 1)
+                
+                base_filter["date"] = {
+                    "$gte": start_of_month,
+                    "$lt": end_of_month
+                }
+            
             # Obtener transacciones del usuario ordenadas por fecha descendente
-            transactions_cursor = db.transactions.find(
-                {"user_id": ObjectId(str(user.id))}
-            ).sort("date", -1)
-
+            transactions_cursor = db.transactions.find(base_filter).sort("date", -1)
             transactions_list = list(transactions_cursor)
             
             # Paginar resultados
@@ -148,7 +166,9 @@ def create_routes(app: FastAPI):
                 "user": user,
                 "transactions": transactions_page,
                 "summary": summary,
-                "pagination": pagination
+                "pagination": pagination,
+                "current_view": view,
+                "is_monthly": view == "monthly"
             })
             
         except Exception as e:
@@ -159,6 +179,8 @@ def create_routes(app: FastAPI):
                 "transactions": [],
                 "summary": TransactionSummary(),
                 "pagination": {"page": 1, "pages": 1, "has_prev": False, "has_next": False},
+                "current_view": view,
+                "is_monthly": view == "monthly",
                 "error": "Error cargando transacciones"
             })
 
@@ -306,10 +328,17 @@ def create_routes(app: FastAPI):
             if not transaction_doc:
                 raise HTTPException(status_code=404, detail="Transacción no encontrada")
             
+            # Obtener mensaje de éxito si existe
+            success_message = None
+            if request.query_params.get("success") == "category_updated":
+                success_message = "Categoría actualizada correctamente"
+            
             return templates.TemplateResponse("transaction_detail.html", {
                 "request": request,
                 "user": user,
-                "transaction": transaction_doc
+                "transaction": transaction_doc,
+                "success_message": success_message,
+                "categories": COMMON_CATEGORIES
             })
             
         except HTTPException:
@@ -318,6 +347,53 @@ def create_routes(app: FastAPI):
             logger.error(f"Error viendo transacción: {e}")
             raise HTTPException(status_code=500, detail="Error interno del servidor")
 
+    @app.post("/transaction/{transaction_id}/edit-category")
+    async def edit_transaction_category(
+        request: Request,
+        transaction_id: str,
+        category: str = Form(...),
+        user: User = Depends(require_auth)
+    ):
+        """Editar la categoría de una transacción"""
+        db = get_database()
+        
+        try:
+            # Verificar que el ObjectId sea válido
+            if not ObjectId.is_valid(transaction_id):
+                raise HTTPException(status_code=404, detail="Transacción no encontrada")
+            
+            # Validar que la categoría sea válida
+            if category not in COMMON_CATEGORIES:
+                raise HTTPException(status_code=400, detail="Categoría no válida")
+            
+            # Actualizar la transacción
+            result = db.transactions.update_one(
+                {
+                    "_id": ObjectId(transaction_id),
+                    "user_id": ObjectId(str(user.id))
+                },
+                {
+                    "$set": {
+                        "category": category,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            
+            if result.matched_count == 0:
+                raise HTTPException(status_code=404, detail="Transacción no encontrada")
+            
+            # Redirigir de vuelta al detalle de la transacción con mensaje de éxito
+            return RedirectResponse(
+                url=f"/transaction/{transaction_id}?success=category_updated", 
+                status_code=302
+            )
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error editando categoría de transacción: {e}")
+            raise HTTPException(status_code=500, detail="Error interno del servidor")
 
     @app.post("/validate-transaction/{transaction_id}")
     async def validate_transaction(

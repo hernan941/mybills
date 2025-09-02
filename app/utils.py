@@ -5,9 +5,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def get_current_month_name(include_year: bool = True) -> str:
+    """Retorna el nombre del mes actual en español"""
+    months = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+    }
+    now = datetime.now()
+    if include_year:
+        return f"{months[now.month]} {now.year}"
+    else:
+        return months[now.month]
+
 def format_currency(amount: float) -> str:
     """Formatea un monto como moneda"""
-    return f"€{amount:,.2f}"
+    return f"${amount:,.2f}"
 
 def format_datetime(dt: datetime, format_str: str = "%d/%m/%Y %H:%M") -> str:
     """Formatea una fecha/hora"""
@@ -67,6 +80,7 @@ def humanize_origin(origin: Optional[str]) -> str:
         "tarjeta_credito": "Tarjeta de Crédito",
         "tarjeta_debito": "Tarjeta de Débito", 
         "transferencia_bancaria": "Transferencia Bancaria",
+        "tenpo": "Tenpo",
         "otro": "Otro"
     }
     return mapping.get(origin, origin.replace("_", " ").title())
@@ -86,7 +100,11 @@ def humanize_category(category: Optional[str]) -> str:
         "trabajo": "Trabajo",
         "compras": "Compras",
         "servicios": "Servicios",
-        "otro": "Otro"
+        "supermercado": "Supermercado",
+        "restaurantes": "Restaurantes",
+        "ropa": "Ropa y Accesorios",
+        "otros": "Otros",
+        "otro": "Otro"  # Mantener compatibilidad hacia atrás
     }
     return mapping.get(category, category.replace("_", " ").title())
 

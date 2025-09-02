@@ -6,10 +6,14 @@ Una aplicación web moderna para gestionar tus finanzas personales, desarrollada
 
 - 🔐 **Autenticación segura** con sesiones
 - 💸 **Gestión completa de transacciones** (gastos, ingresos, pagos, transferencias)
-- 🎨 **Interface web responsiva** renderizada del lado del servidor (SSR)
+- 🤖 **Importación automática** desde emails de Tenpo via Google Apps Script
+- �️ **Categorización inteligente** de transacciones automáticas
+- �🎨 **Interface web responsiva** renderizada del lado del servidor (SSR)
+- 📊 **Dashboard con vistas mensual e histórica**
+- ✏️ **Edición de categorías** desde el detalle de transacciones
 - 🗄️ **Base de datos MongoDB** (local o Atlas)
 - 🛡️ **Validaciones y seguridad** integradas
-- 📊 **Dashboard intuitivo** para visualizar tus finanzas
+- ⌨️ **Atajos de teclado** para navegación rápida
 
 ## 🚀 Inicio Rápido
 
@@ -66,31 +70,6 @@ Una aplicación web moderna para gestionar tus finanzas personales, desarrollada
    
    Abre tu navegador en: http://localhost:8000
 
-## 📁 Estructura del Proyecto
-
-```
-webmybills/
-├── 📁 app/
-│   ├── __init__.py
-│   ├── config.py          # ⚙️ Configuración y variables de entorno
-│   ├── database.py        # 🗄️ Conexión a MongoDB
-│   ├── models.py          # 📋 Modelos de datos (Usuario, Transacción)
-│   ├── auth.py            # 🔐 Autenticación y gestión de sesiones
-│   ├── routes.py          # 🛤️ Rutas de la aplicación
-│   └── utils.py           # 🔧 Utilidades varias
-├── 📁 templates/
-│   ├── base.html          # 🎨 Template base
-│   ├── login.html         # 🔑 Página de login
-│   ├── dashboard.html     # 📊 Dashboard principal
-│   └── add_transaction.html # ➕ Formulario nueva transacción
-├── 📁 static/
-│   └── style.css          # 🎨 Estilos CSS
-├── main.py               # 🚀 Punto de entrada
-├── requirements.txt      # 📦 Dependencias
-├── simple_setup.py       # ⚡ Script de configuración inicial
-└── README.md            # 📖 Esta documentación
-```
-
 ## 👤 Configuración Inicial
 
 1. **Crear usuario administrador:**
@@ -104,67 +83,66 @@ webmybills/
 
    > ⚠️ **Importante:** Cambia estas credenciales en producción
 
-## 💡 Uso de la Aplicación
+## 🤖 Integración Automática con Google Apps Script
 
-### Tipos de Transacciones
+MyBills incluye un sistema de webhook que permite recibir automáticamente emails de comprobantes de Tenpo y convertirlos en transacciones.
 
-| Tipo | Descripción | Ejemplo |
-|------|-------------|---------|
-| 💸 **Gasto** | Dinero que sale de tu bolsillo | Compra de comida, gasolina |
-| 💰 **Ingreso** | Dinero que recibes | Salario, freelance |
-| 💳 **Pago** | Pagos a terceros o servicios | Facturas, préstamos |
-| 🔄 **Transferencia** | Movimientos entre cuentas | Ahorro a cuenta corriente |
+### Configuración de Google Apps Script
 
-### Orígenes de Transacciones
+1. **Crear un nuevo proyecto en Google Apps Script:**
+   - Ve a [script.google.com](https://script.google.com)
+   - Crea un nuevo proyecto
 
-- 💵 Efectivo
-- 🏦 Banco
-- 💳 Tarjeta de crédito
-- 💰 Tarjeta de débito
-- 📱 Transferencia bancaria
-- ❓ Otro
+2. **Añadir el código del script:**
+   ```javascript
+   function forwardToWebhook() {
+     var threads = GmailApp.search('from:no-reply@tenpo.cl is:unread');
+     
+     for (var i = 0; i < threads.length; i++) {
+       var messages = threads[i].getMessages();
+       
+       for (var j = 0; j < messages.length; j++) {
+         var msg = messages[j];
+         
+         var payload = "subject=" + encodeURIComponent(msg.getSubject()) + 
+                       "&body=" + encodeURIComponent(msg.getPlainBody());
+         
+         console.log(payload);
+         
+         UrlFetchApp.fetch("https://tu-dominio.com/webhook/email", {
+           method: "post",
+           contentType: "application/x-www-form-urlencoded",
+           payload: payload  
+         });
+         
+         msg.markRead(); // Marca solo el mensaje leído, no todo el thread
+       }
+     }
+   }
+   ```
 
-## ⚙️ Variables de Entorno
+3. **Configurar el webhook:**
+   - Reemplaza `https://tu-dominio.com/webhook/email` con la URL real de tu aplicación
+   - El script busca emails no leídos de `no-reply@tenpo.cl`
+   - Envía el asunto y cuerpo del email al webhook de MyBills
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `MONGODB_URI` | URI de conexión a MongoDB | `mongodb://localhost:27017/mybills` |
-| `SECRET_KEY` | Clave secreta para sesiones | `mi-clave-super-secreta-123` |
-| `DEBUG` | Modo desarrollo (opcional) | `True` o `False` |
+4. **Configurar trigger automático:**
+   - En Google Apps Script, ve a "Activadores" (Triggers)
+   - Crear nuevo activador:
+     - Función: `forwardToWebhook`
+     - Tipo: Basado en tiempo
+     - Frecuencia: Cada 5-15 minutos (según preferencia)
 
-## 🛠️ Desarrollo
+### Cómo Funciona
 
-### Ejecutar en modo desarrollo:
-```bash
-uvicorn main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-### Comandos útiles:
-```bash
-# Instalar dependencias de desarrollo
-pip install -r requirements-dev.txt
-
-# Ejecutar tests (si están configurados)
-pytest
-
-# Formatear código
-black app/
-
-# Linting
-flake8 app/
-```
-
-## 🐳 Docker (Opcional)
-
-Si prefieres usar Docker:
-
-```bash
-# Construir imagen
-docker build -t mybills .
-
-# Ejecutar contenedor
-docker run -p 8000:8000 --env-file .env mybills
-```
+1. **Recepción de Email**: Cuando recibes un comprobante de Tenpo en tu Gmail
+2. **Procesamiento**: Google Apps Script detecta el email y lo envía al webhook
+3. **Parsing**: MyBills analiza el contenido y extrae:
+   - Monto de la transacción
+   - Comercio/descripción
+   - Fecha y hora
+   - Categoría automática (basada en el nombre del comercio)
+4. **Creación**: Se crea automáticamente una nueva transacción en tu dashboard
 
 ## 🤝 Contribución
 
@@ -186,6 +164,3 @@ Si tienes problemas o preguntas:
 2. Crea un [nuevo Issue](../../issues/new)
 3. Consulta la documentación de [FastAPI](https://fastapi.tiangolo.com/)
 
----
-
-**¡Hecho con ❤️ para ayudarte a

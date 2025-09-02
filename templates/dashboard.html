@@ -19,6 +19,45 @@
 </div>
 {% endif %}
 
+<!-- View Toggle Controls -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-speedometer2"></i> 
+            Dashboard
+        </h1>
+        <p class="text-muted">
+            {% if is_monthly %}
+                Resumen de transacciones {{ get_current_month_name() }}
+            {% else %}
+                Todas tus transacciones
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group" role="group" aria-label="Vista">
+            <input type="radio" class="btn-check" name="viewOptions" id="monthlyView" autocomplete="off" 
+                   {% if is_monthly %}checked{% endif %} onchange="changeView('monthly')">
+            <label class="btn btn-outline-primary" for="monthlyView" 
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Presiona 'M' para cambio rápido">
+                <i class="bi bi-calendar-month"></i> {{ get_current_month_name() }}
+            </label>
+            
+            <input type="radio" class="btn-check" name="viewOptions" id="historicalView" autocomplete="off" 
+                   {% if not is_monthly %}checked{% endif %} onchange="changeView('historical')">
+            <label class="btn btn-outline-primary" for="historicalView"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="Presiona 'H' para cambio rápido">
+                <i class="bi bi-clock-history"></i> Histórico
+            </label>
+        </div>
+        
+        <a href="/add-transaction" class="btn btn-success ms-2"
+           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Presiona 'N' para acceso rápido">
+            <i class="bi bi-plus-circle"></i> Nueva Transacción
+        </a>
+    </div>
+</div>
+
 <!-- Summary Cards -->
 <div class="row mb-4 mt-4">
     <div class="col-md-3 mb-3">
@@ -26,7 +65,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h6 class="card-title text-success mb-1">Ingresos</h6>
+                        <h6 class="card-title text-success mb-1">
+                            Ingresos 
+                        </h6>
                         <h4 class="mb-0">{{ format_currency(summary.total_ingresos) }}</h4>
                     </div>
                     <div class="align-self-center">
@@ -42,7 +83,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h6 class="card-title text-danger mb-1">Gastos</h6>
+                        <h6 class="card-title text-danger mb-1">
+                            Gastos 
+                        </h6>
                         <h4 class="mb-0">{{ format_currency(summary.total_gastos) }}</h4>
                     </div>
                     <div class="align-self-center">
@@ -58,7 +101,9 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h6 class="card-title text-{% if summary.balance >= 0 %}success{% else %}danger{% endif %} mb-1">Balance</h6>
+                        <h6 class="card-title text-{% if summary.balance >= 0 %}success{% else %}danger{% endif %} mb-1">
+                            Balance 
+                        </h6>
                         <h4 class="mb-0">{{ format_currency(summary.balance) }}</h4>
                     </div>
                     <div class="align-self-center">
@@ -188,7 +233,7 @@
             <nav aria-label="Paginación de transacciones">
                 <ul class="pagination justify-content-center mb-0">
                     <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                        <a class="page-link" href="?page={{ pagination.prev_num or 1 }}">
+                        <a class="page-link" href="?page={{ pagination.prev_num or 1 }}&view={{ current_view }}">
                             <i class="bi bi-chevron-left"></i> Anterior
                         </a>
                     </li>
@@ -200,7 +245,7 @@
                             </li>
                         {% elif page_num <= 3 or page_num > pagination.pages - 3 or (page_num >= pagination.page - 1 and page_num <= pagination.page + 1) %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                                <a class="page-link" href="?page={{ page_num }}&view={{ current_view }}">{{ page_num }}</a>
                             </li>
                         {% elif page_num == 4 or page_num == pagination.pages - 3 %}
                             <li class="page-item disabled">
@@ -210,7 +255,7 @@
                     {% endfor %}
                     
                     <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                        <a class="page-link" href="?page={{ pagination.next_num or pagination.pages }}">
+                        <a class="page-link" href="?page={{ pagination.next_num or pagination.pages }}&view={{ current_view }}">
                             Siguiente <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -245,10 +290,48 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
     // Auto-refresh page every 5 minutes
     setTimeout(function() {
         window.location.reload();
     }, 300000);
+});
+
+function changeView(viewType) {
+    // Construir URL con el nuevo parámetro de vista
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('view', viewType);
+    urlParams.delete('page'); // Reset pagination when changing view
+    
+    // Redirigir a la nueva URL
+    window.location.href = '/dashboard?' + urlParams.toString();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // M for monthly view
+    if (e.key === 'm' || e.key === 'M') {
+        if (!e.ctrlKey && !e.altKey) {
+            changeView('monthly');
+        }
+    }
+    // H for historical view
+    if (e.key === 'h' || e.key === 'H') {
+        if (!e.ctrlKey && !e.altKey) {
+            changeView('historical');
+        }
+    }
+    // N for new transaction
+    if (e.key === 'n' || e.key === 'N') {
+        if (!e.ctrlKey && !e.altKey) {
+            window.location.href = '/add-transaction';
+        }
+    }
 });
 </script>
 {% endblock %}

@@ -43,6 +43,7 @@ TRANSACTION_ORIGINS = [
     "tarjeta_credito", 
     "tarjeta_debito",
     "transferencia_bancaria",
+    "tenpo",
     "otro"
 ]
 
@@ -56,5 +57,8 @@ COMMON_CATEGORIES = [
     "trabajo",
     "compras",
     "servicios",
-    "otro"
+    "supermercado",
+    "restaurantes",
+    "ropa",
+    "otros"
 ]
