@@ -38,7 +38,7 @@ def create_app() -> FastAPI:
     
     app.add_middleware(
         TrustedHostMiddleware, 
-        allowed_hosts=["localhost", "127.0.0.1", "0.0.0.0"]
+        allowed_hosts=["*"]
     )
     
     app.mount("/static", StaticFiles(directory="static"), name="static")

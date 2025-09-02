@@ -16,7 +16,6 @@ class TenpoEmailParser:
     def can_parse(cls, subject: str, body: str) -> bool:
         """Verifica si el email es un comprobante de Tenpo"""
         text = f"{subject} {body}".lower()
-        print(text)
         return any(phrase in text for phrase in cls.TRIGGER_PHRASES)
     
     @classmethod
@@ -32,30 +31,19 @@ class TenpoEmailParser:
             if not amount:
                 return None
 
-            print("monto:", amount)
-            
             # Extraer comercio/descripción
 
             description = cls._extract_merchant(body)
 
 
-            print("descripcion:", description)
-            
             category = cls._determine_category(description or "")
 
-            print("category", category)
-            
             # Extraer fecha
             transaction_date = cls._extract_date(body)
-
-            
-            print("transactiondateqw", transaction_date)
             
             # Crear metadata con información adicional
             metadata = cls._extract_metadata(body)
 
-            print(metadata)
-            
             return TransactionCreate(
                 amount=amount,
                 type="gasto",

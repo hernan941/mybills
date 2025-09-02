@@ -9,8 +9,6 @@ class Settings:
             load_dotenv()
 
         self.mongodb_uri: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017/mybills")
-
-        print(self.mongodb_uri)
         self.secret_key: str = os.getenv("SECRET_KEY", "development-secret-key-change-in-production")
         self.database_name: str = self._extract_db_name(self.mongodb_uri)
         self.session_expires_hours: int = 24
